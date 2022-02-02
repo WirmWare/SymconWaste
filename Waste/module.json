@@ -1,0 +1,15 @@
+{
+    "id": "{77F0A20B-ADFD-9C51-55B7-2FEEFDCC10FA}",
+    "name": "Waste Module",
+    "type": 3,
+    "vendor": "",
+    "aliases":
+    [
+    "Abfallkalender Kleve", "Waste calender Cleve"
+    ],
+    "url": "",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "WASTE"
+}
