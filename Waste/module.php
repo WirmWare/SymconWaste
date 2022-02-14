@@ -5,8 +5,7 @@ declare(strict_types=1);
 //require_once __DIR__ . '/../libs/_traits.php';  // Generell funktions
 
 // CLASS WasteModule
-class WasteModule extends IPSModule
-{
+class WasteModule extends IPSModule {
     use CalendarHelper;
     use ProfileHelper;
     use EventHelper;
@@ -28,8 +27,7 @@ class WasteModule extends IPSModule
     /**
      * Create.
      */
-    public function Create()
-    {
+    public function Create() {
         //Never delete this line!
         parent::Create();
         // Public Holidays
@@ -50,24 +48,8 @@ class WasteModule extends IPSModule
         $this->RegisterPropertyString('BirthdayFormat', $this->Translate('%Y. birthday of %N (%E)'));
         $this->RegisterPropertyInteger('BirthdayVariable', 0);
         $this->RegisterPropertyString('BirthdaySeparator', ', ');
-        // Wedding days
-        $this->RegisterPropertyString('Weddingdays', '[]');
-        $this->RegisterPropertyInteger('WeddingdayNotification', 0);
-        $this->RegisterPropertyString('WeddingdayTime', '{"hour":9,"minute":0,"second":0}');
-        $this->RegisterPropertyInteger('WeddingdayMessage', 0);
-        $this->RegisterPropertyInteger('WeddingdayDuration', 0);
-        $this->RegisterPropertyString('WeddingdayFormat', $this->Translate('%Y. wedding anniversary of %N (%E)'));
-        $this->RegisterPropertyInteger('WeddingdayVariable', 0);
-        $this->RegisterPropertyString('WeddingdaySeparator', ', ');
-        // Death days
-        $this->RegisterPropertyString('Deathdays', '[]');
-        $this->RegisterPropertyInteger('DeathdayNotification', 0);
-        $this->RegisterPropertyString('DeathdayTime', '{"hour":9,"minute":0,"second":0}');
-        $this->RegisterPropertyInteger('DeathdayMessage', 0);
-        $this->RegisterPropertyInteger('DeathdayDuration', 0);
-        $this->RegisterPropertyString('DeathdayFormat', $this->Translate('%Y. anniversary of the death of %N (%E)'));
-        $this->RegisterPropertyInteger('DeathdayVariable', 0);
-        $this->RegisterPropertyString('DeathdaySeparator', ', ');
+  
+
         // Various
         $this->RegisterPropertyString('EclipseFormat', $this->Translate('Next %N is on %D at %T o\'clock'));
         $this->RegisterPropertyString('MoonphaseFormat', $this->Translate('Next %N on %D at %T o\'clock'));
@@ -99,8 +81,7 @@ class WasteModule extends IPSModule
     /**
      * Destroy.
      */
-    public function Destroy()
-    {
+    public function Destroy() {
         if (!IPS_InstanceExists($this->InstanceID)) {
             $this->UnregisterHook('/hook/almanac' . $this->InstanceID);
         }
@@ -112,8 +93,7 @@ class WasteModule extends IPSModule
      *
      * @return JSON configuration string.
      */
-    public function GetConfigurationForm()
-    {
+    public function GetConfigurationForm() {
         // read setup
         $publicCountry = $this->ReadPropertyString('PublicCountry');
         $publicHoliday = $this->ReadPropertyString('PublicRegion');
@@ -142,8 +122,7 @@ class WasteModule extends IPSModule
     /**
      * Apply Configuration Changes.
      */
-    public function ApplyChanges()
-    {
+    public function ApplyChanges() {
         // Never delete this line!
         parent::ApplyChanges();
         // Public Holidays
@@ -276,8 +255,7 @@ class WasteModule extends IPSModule
      *
      * ALMANAC_Notify($id, $days);
      */
-    public function Notify(string $days)
-    {
+    public function Notify(string $days) {
         $this->SendDebug(__FUNCTION__, $days);
         // Notify enabled?
         $isDay = $this->ReadPropertyInteger(self::DP[$days][2]);
@@ -309,8 +287,7 @@ class WasteModule extends IPSModule
      *
      * ALMANAC_Update($id);
      */
-    public function Update()
-    {
+    public function Update() {
         // General Date
         $isHoliday = $this->ReadPropertyBoolean('UpdateHoliday');
         $isVacation = $this->ReadPropertyBoolean('UpdateVacation');
@@ -340,26 +317,7 @@ class WasteModule extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'ERROR HOLIDAY: ' . $ex->getMessage(), 0);
             }
         }
-        // School Vacations
-        if ($isVacation == true) {
-            try {
-                $this->SetValueString('Vacation', $date['Vacation']);
-                $this->SetValueBoolean('IsVacation', $date['IsVacation']);
-            } catch (Exception $ex) {
-                $this->LogMessage($ex->getMessage(), KL_ERROR);
-                $this->SendDebug(__FUNCTION__, 'ERROR VACATION: ' . $ex->getMessage(), 0);
-            }
-        }
-        // Festive Days
-        if ($isFestive == true) {
-            try {
-                $this->SetValueString('Festive', $date['Festive']);
-                $this->SetValueBoolean('IsFestive', $date['IsFestive']);
-            } catch (Exception $ex) {
-                $this->LogMessage($ex->getMessage(), KL_ERROR);
-                $this->SendDebug(__FUNCTION__, 'ERROR FESTIVE: ' . $ex->getMessage(), 0);
-            }
-        }
+
         // General Date Info
         if ($isDate == true) {
             try {
@@ -385,24 +343,7 @@ class WasteModule extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'ERROR BIRTH: ' . $ex->getMessage(), 0);
             }
         }
-        // Wedding days
-        if ($isWedding == true) {
-            try {
-                $this->UpdateDay(self::DP[self::WD], $date, $script);
-            } catch (Exception $ex) {
-                $this->LogMessage($ex->getMessage(), KL_ERROR);
-                $this->SendDebug(__FUNCTION__, 'ERROR WEDDING: ' . $ex->getMessage(), 0);
-            }
-        }
-        // Death days
-        if ($isDeath == true) {
-            try {
-                $this->UpdateDay(self::DP[self::DD], $date, $script);
-            } catch (Exception $ex) {
-                $this->LogMessage($ex->getMessage(), KL_ERROR);
-                $this->SendDebug(__FUNCTION__, 'ERROR DEATH: ' . $ex->getMessage(), 0);
-            }
-        }
+
         // Eclipse event
         if ($isEclipse == true) {
             try {
@@ -492,20 +433,6 @@ class WasteModule extends IPSModule
         $isBirth = $this->LookupDays($ts, self::DP[self::BD][1]);
         $date['Birthday'] = $isBirth;
         $date['IsBirthday'] = (count($isBirth) == 0) ? false : true;
-
-        // --------------------------------------------------------------------
-        // get weddingdays
-        // --------------------------------------------------------------------
-        $isWedding = $this->LookupDays($ts, self::DP[self::WD][1]);
-        $date['Weddingday'] = $isWedding;
-        $date['IsWeddingday'] = (count($isWedding) == 0) ? false : true;
-
-        // --------------------------------------------------------------------
-        // get deathdays
-        // --------------------------------------------------------------------
-        $isDeath = $this->LookupDays($ts, self::DP[self::DD][1]);
-        $date['Deathday'] = $isDeath;
-        $date['IsDeathday'] = (count($isDeath) == 0) ? false : true;
 
         // --------------------------------------------------------------------
         // get holiday data
@@ -628,30 +555,6 @@ class WasteModule extends IPSModule
         $date['IsEclipse'] = $hit;
 
         // --------------------------------------------------------------------
-        // get moon phase
-        // --------------------------------------------------------------------
-        // prepeare API-URL (fix DE)
-        $link = str_replace('YEAR', $year, $url);
-        $link = str_replace('COUNTRY', 'de', $link);
-        $link = str_replace('EVENT', 'phases', $link);
-        $data = $this->ExtractDates($link);
-        $isMoonphase = [];
-        $hit = false;
-        foreach ($data as $entry) {
-            if ($now <= $entry['date']) {
-                $this->SendDebug(__FUNCTION__, 'MOONPHASE: ' . $entry['name']);
-                $md = substr($entry['date'], 6, 2) . '.' . substr($entry['date'], 4, 2) . '.' . substr($entry['date'], 0, 4);
-                $isMoonphase = ['name' => $entry['name'], 'date' => $md, 'time' => date('H:i', intval($entry['time']))];
-                if ($now == $entry['date']) {
-                    $hit = true;
-                }
-                break;
-            }
-        }
-        $date['Moonphase'] = $isMoonphase;
-        $date['IsMoonphase'] = $hit;
-
-        // --------------------------------------------------------------------
         // get quote of the day
         // --------------------------------------------------------------------
         $url = $this->ReadAttributeString('QuoteURL');
@@ -738,29 +641,17 @@ class WasteModule extends IPSModule
      *
      * @param string $value Base64 coded data.
      */
-    protected function OnImportBirthdays($value)
-    {
+    protected function OnImportBirthdays($value) {
         $this->ImportCSV('Birthdays', $value);
     }
 
-    /**
-     * Import wedding days data.
+     /**
+     * Import birthdays data.
      *
      * @param string $value Base64 coded data.
      */
-    protected function OnImportWeddingdays($value)
-    {
-        $this->ImportCSV('Weddingdays', $value);
-    }
-
-    /**
-     * Import death days data.
-     *
-     * @param string $value Base64 coded data.
-     */
-    protected function OnImportDeathdays($value)
-    {
-        $this->ImportCSV('Deathdays', $value);
+    protected function OnImportWastedata($value) {
+        $this->ImportICS($value);
     }
 
     /**
@@ -1052,14 +943,70 @@ class WasteModule extends IPSModule
         $this->UpdateFormField($property, 'values', json_encode($data));
     }
 
+
+    /**
+     * Get ICS data and extract dates from iCal format.
+     *
+     * @param string $property Name of the list element
+     * @param string $value Data to import (base64 coded)
+     */
+    private function ImportICS(string $value) {
+        $property = 'Birthday';
+        $ics = base64_decode($value);
+        $lines = preg_split('/[\r\n]{1,2}(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/', $ics);
+        $data = [];
+        foreach ($lines as $row) {
+            $data[] = str_getcsv($row);
+        }
+        // check ... was comma
+        $cols = max(array_map('count', $data));
+        if ($cols != 2) {
+            unset($data);
+            foreach ($lines as $row) {
+                $data[] = str_getcsv($row, ';');
+            }
+        }
+        // check ... was semicolon
+        $cols = max(array_map('count', $data));
+        if ($cols != 2) {
+            $this->SendDebug(__FUNCTION__, 'No CSV format found!');
+            return;
+        }
+        // get the current entries
+        $list = json_decode($this->ReadPropertyString($property), true);
+        if (empty($list) || !is_array($list)) {
+            $list = [];
+        }
+        // build value list
+        $entry = [];
+        foreach ($data as $key => $item) {
+            if (is_array($item) && isset($item[0])) {
+                $dt = date_parse($item[0]);
+                $bd = '{"year":' . $dt['year'] . ',"month":' . $dt['month'] . ',"day":' . $dt['day'] . '}';
+                $entry[] = ['Date' => $bd, 'Name' => $item[1]];
+            }
+        }
+        // merge both
+        $data = array_merge($list, $entry);
+        // remve multi dimension
+        $data = array_map('serialize', $data);
+        // remove duplicates
+        $data = array_unique($data);
+        // back to multidimension array
+        $data = array_map('unserialize', $data);
+        // remove index key
+        $data = array_values($data);
+        // Update list values
+        $this->UpdateFormField($property, 'values', json_encode($data));
+    }
+
     /**
      * Get and extract dates from json format.
      *
      * @param string $url API URL to receive event information.
      * @return array  array, with name, start and end date
      */
-    private function ExtractDates(string $url, string $info = 'events'): array
-    {
+    private function ExtractDates(string $url, string $info = 'events'): array {
         // Debug output
         $this->SendDebug(__FUNCTION__, 'LINK: ' . $url, 0);
         // read API URL
@@ -1077,30 +1024,13 @@ class WasteModule extends IPSModule
     }
 
     /**
-     * Reads the public regions for a given country.
-     *
-     * @param string $country country data array.
-     * @return array Region options array.
-     */
-    private function GetRegions(array $country): array
-    {
-        $options = [];
-        // Client List
-        foreach ($country[0]['regions'] as $rid => $regions) {
-            $options[] = ['caption' => $regions['name'], 'value'=> $regions['ident']];
-        }
-        return $options;
-    }
-
-    /**
      * Reads the schools for a given region.
      *
      * @param string $country country data array.
      * @param string $region region ident.
      * @return array School options array.
      */
-    private function GetSchool(array $country, string $region): array
-    {
+    private function GetSchool(array $country, string $region): array {
         $options = [];
         // Client List
         foreach ($country[0]['regions'] as $rid => $regions) {
@@ -1120,8 +1050,7 @@ class WasteModule extends IPSModule
      * @param string $ident Ident of the boolean variable
      * @param bool   $value Value of the boolean variable
      */
-    private function SetValueBoolean(string $ident, bool $value)
-    {
+    private function SetValueBoolean(string $ident, bool $value) {
         $id = $this->GetIDForIdent($ident);
         SetValueBoolean($id, $value);
     }
@@ -1132,8 +1061,7 @@ class WasteModule extends IPSModule
      * @param string $ident Ident of the string variable
      * @param string $value Value of the string variable
      */
-    private function SetValueString(string $ident, string $value)
-    {
+    private function SetValueString(string $ident, string $value) {
         $id = $this->GetIDForIdent($ident);
         SetValueString($id, $value);
     }
@@ -1144,8 +1072,7 @@ class WasteModule extends IPSModule
      * @param string $ident Ident of the integer variable
      * @param int    $value Value of the integer variable
      */
-    private function SetValueInteger(string $ident, int $value)
-    {
+    private function SetValueInteger(string $ident, int $value) {
         $id = $this->GetIDForIdent($ident);
         SetValueInteger($id, $value);
     }
